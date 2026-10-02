@@ -13,7 +13,11 @@ public class StatementCalculator {
                 .map(Transaction::amount)
                 .filter(amount -> amount.compareTo(BigDecimal.ZERO) > 0)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        BigDecimal totalSpending = BigDecimal.ZERO;
+        BigDecimal totalSpending = statement.transactions().stream()
+                .map(Transaction::amount)
+                .filter(amount -> amount.compareTo(BigDecimal.ZERO) < 0)
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .negate();
         BigDecimal monthlyBalance = totalIncome.subtract(totalSpending);
         BigDecimal closingBalance = statement.openingBalance().add(monthlyBalance);
 
