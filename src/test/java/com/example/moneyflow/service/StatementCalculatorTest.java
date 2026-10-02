@@ -100,4 +100,20 @@ class StatementCalculatorTest {
         assertThat(summary.totalSpending()).isEqualByComparingTo("0.00");
         assertThat(summary.monthlyBalance()).isEqualByComparingTo("0.00");
     }
+
+    @Test
+    void addsMonthlyBalanceToOpeningBalanceForClosingBalance() {
+        Statement statement = new Statement(
+                "acc-1",
+                YearMonth.of(2026, 1),
+                "EUR",
+                new BigDecimal("500.00"),
+                List.of(
+                        new Transaction("t1", LocalDate.of(2026, 1, 5), new BigDecimal("100.00")),
+                        new Transaction("t2", LocalDate.of(2026, 1, 10), new BigDecimal("-30.00"))));
+
+        MonthlySummary summary = calculator.calculate(statement);
+
+        assertThat(summary.closingBalance()).isEqualByComparingTo("570.00");
+    }
 }
