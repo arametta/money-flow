@@ -32,4 +32,21 @@ class StatementCalculatorTest {
         assertThat(summary.totalIncome()).isEqualByComparingTo("150.00");
         assertThat(summary.totalSpending()).isEqualByComparingTo("0.00");
     }
+
+    @Test
+    void sumsOnlySpendingWhenAllAmountsAreNegative() {
+        Statement statement = new Statement(
+                "acc-1",
+                YearMonth.of(2026, 1),
+                "EUR",
+                BigDecimal.ZERO,
+                List.of(
+                        new Transaction("t1", LocalDate.of(2026, 1, 5), new BigDecimal("-30.00")),
+                        new Transaction("t2", LocalDate.of(2026, 1, 10), new BigDecimal("-20.00"))));
+
+        MonthlySummary summary = calculator.calculate(statement);
+
+        assertThat(summary.totalIncome()).isEqualByComparingTo("0.00");
+        assertThat(summary.totalSpending()).isEqualByComparingTo("50.00");
+    }
 }
