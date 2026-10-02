@@ -1,0 +1,123 @@
+openapi: 3.0.3
+info:
+  title: External APIs consumed by money-flow
+  description: >
+    Contract for the two external APIs this app calls: the Statements API
+    (source data) and the Monthly Summaries API (where results are sent).
+    These are two separate services, each with its own base URL.
+  version: 1.0.0
+
+tags:
+  - name: Statements API
+    description: Provides one bank statement per account and month.
+  - name: Monthly Summaries API
+    description: Receives the calculated monthly summary.
+
+paths:
+  /accounts/{accountId}/statements/{month}:
+    get:
+      tags: [Statements API]
+      summary: Get the statement for one account and month
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: month
+          in: path
+          required: true
+          description: Month in YYYY-MM format
+          schema:
+            type: string
+            pattern: '^\d{4}-(0[1-9]|1[0-2])$'
+      responses:
+        '200':
+          description: Statement found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Statement'
+        '404':
+          description: Account or statement not found
+
+  /monthly-summaries:
+    post:
+      tags: [Monthly Summaries API]
+      summary: Send a calculated monthly summary
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MonthlySummary'
+      responses:
+        '201':
+          description: Summary accepted
+
+components:
+  schemas:
+    Transaction:
+      type: object
+      required: [id, valueDate, amount]
+      properties:
+        id:
+          type: string
+        valueDate:
+          type: string
+          format: date
+        amount:
+          type: number
+          description: Positive is income, negative is spending, zero is ignored.
+
+    Statement:
+      type: object
+      required: [accountId, month, currency, openingBalance, transactions]
+      properties:
+        accountId:
+          type: string
+        month:
+          type: string
+          pattern: '^\d{4}-(0[1-9]|1[0-2])$'
+        currency:
+          type: string
+          description: ISO 4217 currency code. Already converted upstream.
+          example: EUR
+        openingBalance:
+          type: number
+        transactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Transaction'
+
+    MonthlySummary:
+      type: object
+      required:
+        - accountId
+        - month
+        - currency
+        - totalIncome
+        - totalSpending
+        - monthlyBalance
+        - openingBalance
+        - closingBalance
+      properties:
+        accountId:
+          type: string
+        month:
+          type: string
+          pattern: '^\d{4}-(0[1-9]|1[0-2])$'
+        currency:
+          type: string
+          example: EUR
+        totalIncome:
+          type: number
+        totalSpending:
+          type: number
+          description: Always positive.
+        monthlyBalance:
+          type: number
+        openingBalance:
+          type: number
+        closingBalance:
+          type: number
