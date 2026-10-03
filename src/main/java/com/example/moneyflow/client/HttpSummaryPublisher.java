@@ -1,10 +1,12 @@
 package com.example.moneyflow.client;
 
+import com.example.moneyflow.error.SummaryUnavailableException;
 import com.example.moneyflow.model.MonthlySummary;
 import com.example.moneyflow.service.SummaryPublisher;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 
 /** Sends the summary to the real summary API over HTTP. */
 @Component
@@ -25,10 +27,14 @@ public class HttpSummaryPublisher implements SummaryPublisher {
 
     @Override
     public void publish(MonthlySummary summary) {
-        restClient.post()
-                .uri("/monthly-summaries")
-                .body(summary)
-                .retrieve()
-                .toBodilessEntity();
+        try {
+            restClient.post()
+                    .uri("/monthly-summaries")
+                    .body(summary)
+                    .retrieve()
+                    .toBodilessEntity();
+        } catch (RestClientException e) {
+            throw new SummaryUnavailableException("Summary API failed", e);
+        }
     }
 }

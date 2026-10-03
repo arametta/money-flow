@@ -1,12 +1,12 @@
 package com.example.moneyflow.client;
 
+import com.example.moneyflow.error.StatementNotFoundException;
+import com.example.moneyflow.error.StatementTimeoutException;
+import com.example.moneyflow.error.StatementUnavailableException;
 import com.example.moneyflow.model.Statement;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.ResourceAccessException;
 
 import java.time.Duration;
 import java.time.YearMonth;
@@ -57,25 +57,25 @@ class HttpStatementClientTest {
 
         assertThatThrownBy(() ->
                 clientWithTimeout(Duration.ofSeconds(5)).getStatement("acc-1", YearMonth.of(2026, 1)))
-                .isInstanceOf(HttpClientErrorException.NotFound.class);
+                .isInstanceOf(StatementNotFoundException.class);
     }
 
     @Test
-    void throwsServerErrorOn500() {
+    void throwsUnavailableOn500() {
         wireMock.stubFor(get("/accounts/acc-1/statements/2026-01").willReturn(serverError()));
 
         assertThatThrownBy(() ->
                 clientWithTimeout(Duration.ofSeconds(5)).getStatement("acc-1", YearMonth.of(2026, 1)))
-                .isInstanceOf(HttpServerErrorException.class);
+                .isInstanceOf(StatementUnavailableException.class);
     }
 
     @Test
-    void throwsOnTimeout() {
+    void throwsTimeoutOnTimeout() {
         wireMock.stubFor(get("/accounts/acc-1/statements/2026-01")
                 .willReturn(okJson("{}").withFixedDelay(500)));
 
         assertThatThrownBy(() ->
                 clientWithTimeout(Duration.ofMillis(100)).getStatement("acc-1", YearMonth.of(2026, 1)))
-                .isInstanceOf(ResourceAccessException.class);
+                .isInstanceOf(StatementTimeoutException.class);
     }
 }

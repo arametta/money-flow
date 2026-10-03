@@ -1,12 +1,10 @@
 package com.example.moneyflow.client;
 
+import com.example.moneyflow.error.SummaryUnavailableException;
 import com.example.moneyflow.model.MonthlySummary;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.ResourceAccessException;
 
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -48,26 +46,26 @@ class HttpSummaryPublisherTest {
     }
 
     @Test
-    void throwsNotFoundOn404() {
+    void throwsUnavailableOn404() {
         wireMock.stubFor(post("/monthly-summaries").willReturn(notFound()));
 
         assertThatThrownBy(() -> publisherWithTimeout(Duration.ofSeconds(5)).publish(SUMMARY))
-                .isInstanceOf(HttpClientErrorException.NotFound.class);
+                .isInstanceOf(SummaryUnavailableException.class);
     }
 
     @Test
-    void throwsServerErrorOn500() {
+    void throwsUnavailableOn500() {
         wireMock.stubFor(post("/monthly-summaries").willReturn(serverError()));
 
         assertThatThrownBy(() -> publisherWithTimeout(Duration.ofSeconds(5)).publish(SUMMARY))
-                .isInstanceOf(HttpServerErrorException.class);
+                .isInstanceOf(SummaryUnavailableException.class);
     }
 
     @Test
-    void throwsOnTimeout() {
+    void throwsUnavailableOnTimeout() {
         wireMock.stubFor(post("/monthly-summaries").willReturn(ok().withFixedDelay(500)));
 
         assertThatThrownBy(() -> publisherWithTimeout(Duration.ofMillis(100)).publish(SUMMARY))
-                .isInstanceOf(ResourceAccessException.class);
+                .isInstanceOf(SummaryUnavailableException.class);
     }
 }
