@@ -140,8 +140,10 @@ Runs every test below without building the Docker image or starting the app.
 Four levels, each with the tool that fits it:
 
 - **Calculator** (`StatementCalculatorTest`) — plain numbers in, plain numbers
-  out, no framework. Built with TDD: each rule started as a failing test,
-  committed before the code that made it pass.
+  out, no framework. Built with real TDD for the first two rules (a failing
+  test, then the minimum code to pass); the rest passed immediately once the
+  general formula existed, so those were committed as confirmation tests
+  rather than faked failures.
 - **Service** (`MoneyFlowServiceTest`) — hand-written Java fakes for
   `StatementClient`/`SummaryPublisher`, no mocking framework, checking the
   orchestration: fetch, calculate, send, in that order.
