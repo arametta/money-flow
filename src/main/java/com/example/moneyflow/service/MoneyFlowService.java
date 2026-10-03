@@ -5,6 +5,7 @@ import com.example.moneyflow.model.Statement;
 
 import java.time.YearMonth;
 
+/** Fetches a statement, calculates the summary, and sends it. */
 public class MoneyFlowService {
 
     private final StatementClient statementClient;

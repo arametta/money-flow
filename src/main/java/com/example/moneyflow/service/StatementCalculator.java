@@ -6,6 +6,7 @@ import com.example.moneyflow.model.Transaction;
 
 import java.math.BigDecimal;
 
+/** Turns a statement into income, spending and balance totals. */
 public class StatementCalculator {
 
     public MonthlySummary calculate(Statement statement) {

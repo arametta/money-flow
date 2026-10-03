@@ -7,6 +7,7 @@ import org.springframework.web.client.RestClient;
 
 import java.time.YearMonth;
 
+/** Calls the real statements API over HTTP. */
 public class HttpStatementClient implements StatementClient {
 
     private final RestClient restClient;
