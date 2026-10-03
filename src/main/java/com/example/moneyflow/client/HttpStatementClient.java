@@ -3,11 +3,13 @@ package com.example.moneyflow.client;
 import com.example.moneyflow.model.Statement;
 import com.example.moneyflow.service.StatementClient;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
 import java.time.YearMonth;
 
 /** Calls the real statements API over HTTP. */
+@Component
 public class HttpStatementClient implements StatementClient {
 
     private final RestClient restClient;

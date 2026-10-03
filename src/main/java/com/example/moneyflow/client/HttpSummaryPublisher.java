@@ -3,9 +3,11 @@ package com.example.moneyflow.client;
 import com.example.moneyflow.model.MonthlySummary;
 import com.example.moneyflow.service.SummaryPublisher;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
 /** Sends the summary to the real summary API over HTTP. */
+@Component
 public class HttpSummaryPublisher implements SummaryPublisher {
 
     private final RestClient restClient;

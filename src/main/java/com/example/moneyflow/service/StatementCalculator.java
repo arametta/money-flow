@@ -3,10 +3,12 @@ package com.example.moneyflow.service;
 import com.example.moneyflow.model.MonthlySummary;
 import com.example.moneyflow.model.Statement;
 import com.example.moneyflow.model.Transaction;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 
 /** Turns a statement into income, spending and balance totals. */
+@Component
 public class StatementCalculator {
 
     public MonthlySummary calculate(Statement statement) {
