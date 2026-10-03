@@ -15,3 +15,5 @@ jobs:
           cache: maven
 
       - run: ./mvnw -B verify
+
+      - run: docker build -t money-flow:ci .
