@@ -1,0 +1,17 @@
+services:
+  wiremock:
+    image: wiremock/wiremock:3.13.2
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./wiremock/mappings:/home/wiremock/mappings
+
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      MONEY_FLOW_STATEMENTS_API_BASE_URL: http://wiremock:8080
+      MONEY_FLOW_SUMMARY_API_BASE_URL: http://wiremock:8080
+    depends_on:
+      - wiremock

@@ -1,0 +1,23 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/accounts/[^/]+/statements/[^/]+"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "accountId": "acc-1",
+      "month": "2026-01",
+      "currency": "EUR",
+      "openingBalance": 500.00,
+      "transactions": [
+        { "id": "t1", "valueDate": "2026-01-05", "amount": 1200.00 },
+        { "id": "t2", "valueDate": "2026-01-10", "amount": -300.00 },
+        { "id": "t3", "valueDate": "2026-01-15", "amount": -45.50 }
+      ]
+    }
+  }
+}
