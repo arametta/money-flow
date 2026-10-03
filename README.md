@@ -127,6 +127,11 @@ All error responses share the same simple body: `{"message": "..."}`.
 
 ## Testing
 
+Requires Java 25 on your `PATH` (or `JAVA_HOME` pointed at it) — class files
+built with Java 25 won't run on an older JVM. This only matters for running
+tests locally; `docker compose up --build` bundles its own Java 25 and is
+unaffected by what's on your machine.
+
 ```bash
 ./mvnw test
 ```
