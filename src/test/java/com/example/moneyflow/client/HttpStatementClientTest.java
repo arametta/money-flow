@@ -4,13 +4,17 @@ import com.example.moneyflow.error.StatementNotFoundException;
 import com.example.moneyflow.error.StatementTimeoutException;
 import com.example.moneyflow.error.StatementUnavailableException;
 import com.example.moneyflow.model.Statement;
+import com.github.tomakehurst.wiremock.http.Fault;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+import java.io.IOException;
+import java.net.ServerSocket;
 import java.time.Duration;
 import java.time.YearMonth;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.notFound;
 import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
@@ -77,6 +81,29 @@ class HttpStatementClientTest {
         assertThatThrownBy(() ->
                 clientWithTimeout(Duration.ofMillis(100)).getStatement("acc-1", YearMonth.of(2026, 1)))
                 .isInstanceOf(StatementTimeoutException.class);
+    }
+
+    @Test
+    void throwsUnavailableOnConnectionRefused() throws IOException {
+        int closedPort;
+        try (ServerSocket socket = new ServerSocket(0)) {
+            closedPort = socket.getLocalPort();
+        }
+        HttpStatementClient client = new HttpStatementClient(
+                new StatementsApiProperties("http://localhost:" + closedPort, Duration.ofSeconds(5)));
+
+        assertThatThrownBy(() -> client.getStatement("acc-1", YearMonth.of(2026, 1)))
+                .isInstanceOf(StatementUnavailableException.class);
+    }
+
+    @Test
+    void throwsUnavailableOnConnectionReset() {
+        wireMock.stubFor(get("/accounts/acc-1/statements/2026-01")
+                .willReturn(aResponse().withFault(Fault.CONNECTION_RESET_BY_PEER)));
+
+        assertThatThrownBy(() ->
+                clientWithTimeout(Duration.ofSeconds(5)).getStatement("acc-1", YearMonth.of(2026, 1)))
+                .isInstanceOf(StatementUnavailableException.class);
     }
 
     @Test
