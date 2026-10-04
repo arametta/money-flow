@@ -3,7 +3,6 @@ package com.example.moneyflow.web;
 import com.example.moneyflow.model.MonthlySummary;
 import com.example.moneyflow.service.MoneyFlowService;
 import jakarta.validation.constraints.NotBlank;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,7 +11,6 @@ import java.time.YearMonth;
 
 /** Receives a request to build and send one monthly summary. */
 @RestController
-@Validated
 public class SummaryController {
 
     private final MoneyFlowService moneyFlowService;
