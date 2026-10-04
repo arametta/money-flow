@@ -78,4 +78,68 @@ class HttpStatementClientTest {
                 clientWithTimeout(Duration.ofMillis(100)).getStatement("acc-1", YearMonth.of(2026, 1)))
                 .isInstanceOf(StatementTimeoutException.class);
     }
+
+    @Test
+    void throwsUnavailableOnEmptyBody() {
+        wireMock.stubFor(get("/accounts/acc-1/statements/2026-01").willReturn(okJson("{}")));
+
+        assertThatThrownBy(() ->
+                clientWithTimeout(Duration.ofSeconds(5)).getStatement("acc-1", YearMonth.of(2026, 1)))
+                .isInstanceOf(StatementUnavailableException.class);
+    }
+
+    @Test
+    void throwsUnavailableWhenOpeningBalanceIsMissing() {
+        wireMock.stubFor(get("/accounts/acc-1/statements/2026-01")
+                .willReturn(okJson("""
+                        {
+                          "accountId": "acc-1",
+                          "month": "2026-01",
+                          "currency": "EUR",
+                          "transactions": []
+                        }
+                        """)));
+
+        assertThatThrownBy(() ->
+                clientWithTimeout(Duration.ofSeconds(5)).getStatement("acc-1", YearMonth.of(2026, 1)))
+                .isInstanceOf(StatementUnavailableException.class);
+    }
+
+    @Test
+    void throwsUnavailableWhenTransactionsIsNull() {
+        wireMock.stubFor(get("/accounts/acc-1/statements/2026-01")
+                .willReturn(okJson("""
+                        {
+                          "accountId": "acc-1",
+                          "month": "2026-01",
+                          "currency": "EUR",
+                          "openingBalance": 100.00,
+                          "transactions": null
+                        }
+                        """)));
+
+        assertThatThrownBy(() ->
+                clientWithTimeout(Duration.ofSeconds(5)).getStatement("acc-1", YearMonth.of(2026, 1)))
+                .isInstanceOf(StatementUnavailableException.class);
+    }
+
+    @Test
+    void throwsUnavailableWhenTransactionAmountIsNull() {
+        wireMock.stubFor(get("/accounts/acc-1/statements/2026-01")
+                .willReturn(okJson("""
+                        {
+                          "accountId": "acc-1",
+                          "month": "2026-01",
+                          "currency": "EUR",
+                          "openingBalance": 100.00,
+                          "transactions": [
+                            {"id": "t1", "valueDate": "2026-01-05", "amount": null}
+                          ]
+                        }
+                        """)));
+
+        assertThatThrownBy(() ->
+                clientWithTimeout(Duration.ofSeconds(5)).getStatement("acc-1", YearMonth.of(2026, 1)))
+                .isInstanceOf(StatementUnavailableException.class);
+    }
 }
