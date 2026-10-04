@@ -1,0 +1,22 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPath": "/accounts/acc-2/statements/2026-02"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "accountId": "acc-2",
+      "month": "2026-02",
+      "currency": "EUR",
+      "openingBalance": 300.00,
+      "transactions": [
+        { "id": "t1", "valueDate": "2026-02-10", "amount": -150.00 }
+      ]
+    }
+  }
+}

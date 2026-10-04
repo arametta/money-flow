@@ -1,0 +1,22 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPath": "/accounts/acc-3/statements/2026-03"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "accountId": "acc-3",
+      "month": "2026-03",
+      "currency": "EUR",
+      "openingBalance": 0.00,
+      "transactions": [
+        { "id": "t1", "valueDate": "2026-03-20", "amount": 800.00 }
+      ]
+    }
+  }
+}
