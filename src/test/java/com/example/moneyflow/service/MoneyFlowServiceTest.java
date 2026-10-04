@@ -1,5 +1,6 @@
 package com.example.moneyflow.service;
 
+import com.example.moneyflow.error.StatementUnavailableException;
 import com.example.moneyflow.model.MonthlySummary;
 import com.example.moneyflow.model.Statement;
 import com.example.moneyflow.model.Transaction;
@@ -11,6 +12,7 @@ import java.time.YearMonth;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class MoneyFlowServiceTest {
 
@@ -37,6 +39,24 @@ class MoneyFlowServiceTest {
         assertThat(result.totalSpending()).isEqualByComparingTo("20.00");
         assertThat(result.closingBalance()).isEqualByComparingTo("130.00");
         assertThat(summaryPublisher.published).isEqualTo(result);
+    }
+
+    @Test
+    void throwsWhenStatementDoesNotMatchTheRequest() {
+        Statement statement = new Statement(
+                "acc-1",
+                YearMonth.of(2026, 1),
+                "EUR",
+                new BigDecimal("100.00"),
+                List.of());
+        FakeStatementClient statementClient = new FakeStatementClient(statement);
+        FakeSummaryPublisher summaryPublisher = new FakeSummaryPublisher();
+        MoneyFlowService service = new MoneyFlowService(
+                statementClient, new StatementCalculator(), summaryPublisher);
+
+        assertThatThrownBy(() -> service.process("acc-999", YearMonth.of(2025, 7)))
+                .isInstanceOf(StatementUnavailableException.class);
+        assertThat(summaryPublisher.published).isNull();
     }
 
     private static class FakeStatementClient implements StatementClient {
