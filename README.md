@@ -180,6 +180,13 @@ anywhere.
   failure, but there's no metrics/alerting layer).
 - Pushing the Docker image to a registry and wiring an actual deploy step,
   instead of only building it in CI.
+- Using Spring Boot's auto-configured `RestClient.Builder` (from the
+  `spring-boot-restclient` artifact) instead of building each `RestClient` by
+  hand. Today both HTTP clients share one small helper, so there's no
+  duplicated code, but they still call the static `RestClient.builder()`
+  directly. The auto-configured builder would make them automatically follow
+  whatever JSON settings the rest of the app uses — not needed today since
+  there's no custom Jackson config, but worth doing if that ever changes.
 
 ## Use of AI tools
 

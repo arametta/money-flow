@@ -8,7 +8,6 @@ import com.example.moneyflow.model.Transaction;
 import com.example.moneyflow.service.StatementClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
@@ -27,14 +26,7 @@ public class HttpStatementClient implements StatementClient {
     private final RestClient restClient;
 
     public HttpStatementClient(StatementsApiProperties properties) {
-        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
-        requestFactory.setConnectTimeout(properties.timeout());
-        requestFactory.setReadTimeout(properties.timeout());
-
-        this.restClient = RestClient.builder()
-                .baseUrl(properties.baseUrl())
-                .requestFactory(requestFactory)
-                .build();
+        this.restClient = RestClients.create(properties.baseUrl(), properties.timeout());
     }
 
     @Override
