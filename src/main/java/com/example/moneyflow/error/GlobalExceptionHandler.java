@@ -67,7 +67,11 @@ public class GlobalExceptionHandler {
     }
 
     private ResponseEntity<ErrorResponse> errorResponse(HttpStatus status, Exception e, String message) {
-        log.warn("Request failed with {}: {}", status, message, e);
+        if (status.is5xxServerError()) {
+            log.warn("Request failed with {}: {}", status, message, e);
+        } else {
+            log.warn("Request failed with {}: {}", status, message);
+        }
         return ResponseEntity.status(status).body(new ErrorResponse(message));
     }
 }
