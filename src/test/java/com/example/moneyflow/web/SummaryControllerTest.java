@@ -107,4 +107,13 @@ class SummaryControllerTest {
         mockMvc.perform(post("/summaries").param("accountId", "acc-1").param("month", "2026-01"))
                 .andExpect(status().isGatewayTimeout());
     }
+
+    @Test
+    void returns500ForAnyUnexpectedError() throws Exception {
+        when(moneyFlowService.process(any(), any())).thenThrow(new RuntimeException("boom"));
+
+        mockMvc.perform(post("/summaries").param("accountId", "acc-1").param("month", "2026-01"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.message").value("Internal error"));
+    }
 }
