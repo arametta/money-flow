@@ -79,7 +79,8 @@ class SummaryControllerTest {
                 new StatementNotFoundException("not found", null));
 
         mockMvc.perform(post("/summaries").param("accountId", "acc-1").param("month", "2026-01"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("not found"));
     }
 
     @Test
@@ -88,7 +89,8 @@ class SummaryControllerTest {
                 new StatementUnavailableException("failed", null));
 
         mockMvc.perform(post("/summaries").param("accountId", "acc-1").param("month", "2026-01"))
-                .andExpect(status().isBadGateway());
+                .andExpect(status().isBadGateway())
+                .andExpect(jsonPath("$.message").value("failed"));
     }
 
     @Test
@@ -97,7 +99,8 @@ class SummaryControllerTest {
                 new SummaryUnavailableException("failed", null));
 
         mockMvc.perform(post("/summaries").param("accountId", "acc-1").param("month", "2026-01"))
-                .andExpect(status().isBadGateway());
+                .andExpect(status().isBadGateway())
+                .andExpect(jsonPath("$.message").value("failed"));
     }
 
     @Test
@@ -106,7 +109,8 @@ class SummaryControllerTest {
                 new StatementTimeoutException("timed out", null));
 
         mockMvc.perform(post("/summaries").param("accountId", "acc-1").param("month", "2026-01"))
-                .andExpect(status().isGatewayTimeout());
+                .andExpect(status().isGatewayTimeout())
+                .andExpect(jsonPath("$.message").value("timed out"));
     }
 
     @Test
