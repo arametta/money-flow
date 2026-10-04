@@ -46,6 +46,12 @@ public class GlobalExceptionHandler {
         return errorResponse(HttpStatus.BAD_GATEWAY, e);
     }
 
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleUnexpected(Exception e) {
+        log.error("Unexpected error", e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse("Internal error"));
+    }
+
     private ResponseEntity<ErrorResponse> errorResponse(HttpStatus status, Exception e) {
         return errorResponse(status, e, e.getMessage());
     }
