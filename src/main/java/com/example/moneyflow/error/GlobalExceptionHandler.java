@@ -16,13 +16,19 @@ public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    @ExceptionHandler({
-            MissingServletRequestParameterException.class,
-            MethodArgumentTypeMismatchException.class,
-            ConstraintViolationException.class
-    })
-    public ResponseEntity<ErrorResponse> handleBadRequest(Exception e) {
-        return errorResponse(HttpStatus.BAD_REQUEST, e);
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ErrorResponse> handleMissingParameter(MissingServletRequestParameterException e) {
+        return badRequest(e, e.getParameterName() + " is required");
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException e) {
+        return badRequest(e, "month must be in YYYY-MM format");
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleConstraintViolation(ConstraintViolationException e) {
+        return badRequest(e, "accountId must not be blank");
     }
 
     @ExceptionHandler(StatementNotFoundException.class)
@@ -41,7 +47,15 @@ public class GlobalExceptionHandler {
     }
 
     private ResponseEntity<ErrorResponse> errorResponse(HttpStatus status, Exception e) {
-        log.warn("Request failed with {}: {}", status, e.getMessage(), e);
-        return ResponseEntity.status(status).body(new ErrorResponse(e.getMessage()));
+        return errorResponse(status, e, e.getMessage());
+    }
+
+    private ResponseEntity<ErrorResponse> badRequest(Exception e, String message) {
+        return errorResponse(HttpStatus.BAD_REQUEST, e, message);
+    }
+
+    private ResponseEntity<ErrorResponse> errorResponse(HttpStatus status, Exception e, String message) {
+        log.warn("Request failed with {}: {}", status, message, e);
+        return ResponseEntity.status(status).body(new ErrorResponse(message));
     }
 }
