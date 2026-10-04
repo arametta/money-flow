@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -44,6 +45,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({StatementUnavailableException.class, SummaryUnavailableException.class})
     public ResponseEntity<ErrorResponse> handleBadGateway(RuntimeException e) {
         return errorResponse(HttpStatus.BAD_GATEWAY, e);
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ErrorResponse> handleMethodNotAllowed(HttpRequestMethodNotSupportedException e) {
+        return errorResponse(HttpStatus.METHOD_NOT_ALLOWED, e, "Method not allowed");
     }
 
     @ExceptionHandler(Exception.class)
