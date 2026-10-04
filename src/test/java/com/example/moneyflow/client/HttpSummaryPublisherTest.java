@@ -11,11 +11,13 @@ import java.time.Duration;
 import java.time.YearMonth;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.created;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.notFound;
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.serverError;
-import static org.assertj.core.api.Assertions.assertThatCode;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class HttpSummaryPublisherTest {
@@ -41,8 +43,21 @@ class HttpSummaryPublisherTest {
     void publishesSuccessfully() {
         wireMock.stubFor(post("/monthly-summaries").willReturn(created()));
 
-        assertThatCode(() -> publisherWithTimeout(Duration.ofSeconds(5)).publish(SUMMARY))
-                .doesNotThrowAnyException();
+        publisherWithTimeout(Duration.ofSeconds(5)).publish(SUMMARY);
+
+        wireMock.verify(postRequestedFor(urlEqualTo("/monthly-summaries"))
+                .withRequestBody(equalToJson("""
+                        {
+                          "accountId": "acc-1",
+                          "month": "2026-01",
+                          "currency": "EUR",
+                          "totalIncome": 100.00,
+                          "totalSpending": 30.00,
+                          "monthlyBalance": 70.00,
+                          "openingBalance": 500.00,
+                          "closingBalance": 570.00
+                        }
+                        """)));
     }
 
     @Test
