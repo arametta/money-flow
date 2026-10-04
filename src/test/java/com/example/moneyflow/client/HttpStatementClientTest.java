@@ -65,6 +65,16 @@ class HttpStatementClientTest {
     }
 
     @Test
+    void notFoundMessageDoesNotContainAccountId() {
+        wireMock.stubFor(get("/accounts/acc-secret-12345/statements/2026-01").willReturn(notFound()));
+
+        assertThatThrownBy(() ->
+                clientWithTimeout(Duration.ofSeconds(5)).getStatement("acc-secret-12345", YearMonth.of(2026, 1)))
+                .isInstanceOf(StatementNotFoundException.class)
+                .hasMessageNotContaining("acc-secret-12345");
+    }
+
+    @Test
     void throwsUnavailableOn500() {
         wireMock.stubFor(get("/accounts/acc-1/statements/2026-01").willReturn(serverError()));
 
