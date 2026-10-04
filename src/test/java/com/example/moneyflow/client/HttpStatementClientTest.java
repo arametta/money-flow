@@ -12,6 +12,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.YearMonth;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
@@ -51,8 +52,12 @@ class HttpStatementClientTest {
 
         assertThat(statement.accountId()).isEqualTo("acc-1");
         assertThat(statement.month()).isEqualTo(YearMonth.of(2026, 1));
+        assertThat(statement.currency()).isEqualTo("EUR");
+        assertThat(statement.openingBalance()).isEqualByComparingTo("100.00");
         assertThat(statement.transactions()).hasSize(1);
         assertThat(statement.transactions().get(0).id()).isEqualTo("t1");
+        assertThat(statement.transactions().get(0).valueDate()).isEqualTo(LocalDate.of(2026, 1, 5));
+        assertThat(statement.transactions().get(0).amount()).isEqualByComparingTo("50.00");
     }
 
     @Test
