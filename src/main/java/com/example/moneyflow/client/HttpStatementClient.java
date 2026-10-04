@@ -6,6 +6,8 @@ import com.example.moneyflow.error.StatementUnavailableException;
 import com.example.moneyflow.model.Statement;
 import com.example.moneyflow.model.Transaction;
 import com.example.moneyflow.service.StatementClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
@@ -19,6 +21,8 @@ import java.time.YearMonth;
 /** Calls the real statements API over HTTP. */
 @Component
 public class HttpStatementClient implements StatementClient {
+
+    private static final Logger log = LoggerFactory.getLogger(HttpStatementClient.class);
 
     private final RestClient restClient;
 
@@ -43,7 +47,8 @@ public class HttpStatementClient implements StatementClient {
             validate(statement);
             return statement;
         } catch (HttpClientErrorException.NotFound e) {
-            throw new StatementNotFoundException("No statement for account " + accountId, e);
+            log.info("No statement for account ending in {}", mask(accountId));
+            throw new StatementNotFoundException("No statement found", e);
         } catch (ResourceAccessException e) {
             if (e.getCause() instanceof SocketTimeoutException) {
                 throw new StatementTimeoutException("Statements API timed out", e);
@@ -52,6 +57,10 @@ public class HttpStatementClient implements StatementClient {
         } catch (RestClientException e) {
             throw new StatementUnavailableException("Statements API failed", e);
         }
+    }
+
+    private static String mask(String accountId) {
+        return accountId.length() <= 4 ? accountId : accountId.substring(accountId.length() - 4);
     }
 
     private void validate(Statement statement) {
