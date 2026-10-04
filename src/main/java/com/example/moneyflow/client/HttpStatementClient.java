@@ -13,6 +13,7 @@ import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
+import java.net.SocketTimeoutException;
 import java.time.YearMonth;
 
 /** Calls the real statements API over HTTP. */
@@ -44,7 +45,10 @@ public class HttpStatementClient implements StatementClient {
         } catch (HttpClientErrorException.NotFound e) {
             throw new StatementNotFoundException("No statement for account " + accountId, e);
         } catch (ResourceAccessException e) {
-            throw new StatementTimeoutException("Statements API timed out", e);
+            if (e.getCause() instanceof SocketTimeoutException) {
+                throw new StatementTimeoutException("Statements API timed out", e);
+            }
+            throw new StatementUnavailableException("Statements API failed", e);
         } catch (RestClientException e) {
             throw new StatementUnavailableException("Statements API failed", e);
         }
