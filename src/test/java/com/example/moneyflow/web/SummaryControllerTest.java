@@ -75,6 +75,13 @@ class SummaryControllerTest {
     }
 
     @Test
+    void returns400WithOneFixedMessageWhenAccountIdIsOnlySpaces() throws Exception {
+        mockMvc.perform(post("/summaries").param("accountId", "   ").param("month", "2026-01"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("accountId must be 1 to 64 letters, digits or '-'"));
+    }
+
+    @Test
     void returns400WhenAccountIdIsTooLong() throws Exception {
         mockMvc.perform(post("/summaries").param("accountId", "a".repeat(65)).param("month", "2026-01"))
                 .andExpect(status().isBadRequest())
