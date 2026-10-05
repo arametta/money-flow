@@ -121,6 +121,20 @@ class SummaryControllerTest {
     }
 
     @Test
+    void returns404ForUnknownPath() throws Exception {
+        mockMvc.perform(get("/nope"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Not found"));
+    }
+
+    @Test
+    void returns404ForFavicon() throws Exception {
+        mockMvc.perform(get("/favicon.ico"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Not found"));
+    }
+
+    @Test
     void returns500ForAnyUnexpectedError() throws Exception {
         when(moneyFlowService.process(any(), any())).thenThrow(new RuntimeException("boom"));
 

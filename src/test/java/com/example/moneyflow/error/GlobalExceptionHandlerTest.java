@@ -7,6 +7,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpMethod;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -35,6 +37,15 @@ class GlobalExceptionHandlerTest {
     @Test
     void logsClientErrorsWithoutStackTrace() {
         handler.handleNotFound(new StatementNotFoundException("not found", null));
+
+        ILoggingEvent event = appender.list.get(0);
+        assertThat(event.getLevel().toString()).isEqualTo("WARN");
+        assertThat(event.getThrowableProxy()).isNull();
+    }
+
+    @Test
+    void logsUnknownPathWithoutStackTrace() {
+        handler.handleUnexpected(new NoResourceFoundException(HttpMethod.GET, "/nope", "nope"));
 
         ILoggingEvent event = appender.list.get(0);
         assertThat(event.getLevel().toString()).isEqualTo("WARN");
