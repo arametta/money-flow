@@ -155,6 +155,9 @@ structure an app this size doesn't need.
 
 ## Assumptions
 
+- Account ids contain only letters, digits and `-`, at most 64 characters.
+  Anything else is rejected with a 400 before any call upstream, so an id can
+  never change the path the app calls (for example `..`).
 - Each statement is in one currency; any conversion happens upstream.
 - A positive amount is income, a negative amount is spending, zero is ignored.
 - The statements API returns only the requested month's transactions (by
@@ -205,7 +208,7 @@ else in the app depends on them.
 
 | Situation | Status |
 |---|---|
-| Invalid or missing `accountId`/`month` | 400 |
+| Invalid or missing `accountId`/`month` (`accountId`: letters, digits and `-`, at most 64 characters) | 400 |
 | Statements API has no statement for this account/month | 404 |
 | Unknown path (for example `/favicon.ico`) | 404 |
 | Wrong HTTP method (anything other than `POST`) | 405 |

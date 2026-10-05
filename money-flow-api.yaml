@@ -26,9 +26,12 @@ paths:
         - name: accountId
           in: query
           required: true
+          description: Letters, digits and '-' only, at most 64 characters.
           schema:
             type: string
             minLength: 1
+            maxLength: 64
+            pattern: '^[A-Za-z0-9-]+$'
         - name: month
           in: query
           required: true
@@ -48,7 +51,10 @@ paths:
           description: >
             accountId or month is missing or invalid. Messages:
             "accountId is required", "month is required",
-            "accountId must not be blank", "month must be in YYYY-MM format".
+            "accountId must not be blank",
+            "accountId must be at most 64 characters",
+            "accountId must contain only letters, digits and '-'",
+            "month must be in YYYY-MM format".
           content:
             application/json:
               schema:
