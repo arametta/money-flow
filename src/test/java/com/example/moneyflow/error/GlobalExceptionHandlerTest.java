@@ -61,4 +61,13 @@ class GlobalExceptionHandlerTest {
         assertThat(event.getLevel()).isEqualTo(Level.WARN);
         assertThat(event.getThrowableProxy()).isNotNull();
     }
+
+    @Test
+    void logsUnexpectedErrorsWithStackTrace() {
+        handler.handleUnexpected(new IllegalStateException("boom"));
+
+        ILoggingEvent event = appender.list.get(0);
+        assertThat(event.getLevel()).isEqualTo(Level.ERROR);
+        assertThat(event.getThrowableProxy()).isNotNull();
+    }
 }
