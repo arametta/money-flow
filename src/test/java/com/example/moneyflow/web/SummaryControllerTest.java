@@ -54,6 +54,13 @@ class SummaryControllerTest {
     }
 
     @Test
+    void returns400WhenAccountIdIsMissing() throws Exception {
+        mockMvc.perform(post("/summaries").param("month", "2026-01"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("accountId is required"));
+    }
+
+    @Test
     void returns400WhenMonthIsMissing() throws Exception {
         mockMvc.perform(post("/summaries").param("accountId", "acc-1"))
                 .andExpect(status().isBadRequest())
