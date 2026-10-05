@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -47,13 +46,14 @@ public class GlobalExceptionHandler {
         return errorResponse(HttpStatus.BAD_GATEWAY, e);
     }
 
-    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    public ResponseEntity<ErrorResponse> handleMethodNotAllowed(HttpRequestMethodNotSupportedException e) {
-        return errorResponse(HttpStatus.METHOD_NOT_ALLOWED, e, "Method not allowed");
-    }
-
+    // Spring's own exceptions already carry the right status; only unknown exceptions become 500.
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleUnexpected(Exception e) {
+        if (e instanceof org.springframework.web.ErrorResponse springError) {
+            HttpStatus status = HttpStatus.valueOf(springError.getStatusCode().value());
+            String reason = status.getReasonPhrase();
+            return errorResponse(status, e, reason.charAt(0) + reason.substring(1).toLowerCase());
+        }
         log.error("Unexpected error", e);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse("Internal error"));
     }
