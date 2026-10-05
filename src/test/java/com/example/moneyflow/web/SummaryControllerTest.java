@@ -78,7 +78,7 @@ class SummaryControllerTest {
     void returns400WhenAccountIdIsBlank() throws Exception {
         mockMvc.perform(post("/summaries").param("accountId", "").param("month", "2026-01"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("accountId must not be blank"));
+                .andExpect(jsonPath("$.message").value("accountId must be 1 to 64 letters, digits or '-'"));
     }
 
     @Test
@@ -92,14 +92,14 @@ class SummaryControllerTest {
     void returns400WhenAccountIdIsTooLong() throws Exception {
         mockMvc.perform(post("/summaries").param("accountId", "a".repeat(65)).param("month", "2026-01"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("accountId must be at most 64 characters"));
+                .andExpect(jsonPath("$.message").value("accountId must be 1 to 64 letters, digits or '-'"));
     }
 
     @Test
     void returns400WhenAccountIdHasUnsafeCharacters() throws Exception {
         mockMvc.perform(post("/summaries").param("accountId", "..").param("month", "2026-01"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("accountId must contain only letters, digits and '-'"));
+                .andExpect(jsonPath("$.message").value("accountId must be 1 to 64 letters, digits or '-'"));
     }
 
     @Test

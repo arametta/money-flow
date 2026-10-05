@@ -51,9 +51,7 @@ paths:
           description: >
             accountId or month is missing or invalid. Messages:
             "accountId is required", "month is required",
-            "accountId must not be blank",
-            "accountId must be at most 64 characters",
-            "accountId must contain only letters, digits and '-'",
+            "accountId must be 1 to 64 letters, digits or '-'",
             "month must be in YYYY-MM format".
           content:
             application/json:
