@@ -1,11 +1,12 @@
-FROM maven:3.10.0-eclipse-temurin-25 AS build
+FROM eclipse-temurin:25-jdk AS build
 WORKDIR /app
-# Copy the pom alone first so the dependency download is cached until it changes.
-COPY pom.xml .
-RUN mvn -B -q dependency:go-offline
+# Copy the wrapper and pom alone first so the dependency download is cached until they change.
+COPY mvnw pom.xml ./
+COPY .mvn .mvn
+RUN ./mvnw -B -q dependency:go-offline
 COPY src ./src
 # Tests already run in CI.
-RUN mvn -B -q package -DskipTests
+RUN ./mvnw -B -q package -DskipTests
 
 FROM eclipse-temurin:25-jre AS runtime
 # Don't run the app as root.
