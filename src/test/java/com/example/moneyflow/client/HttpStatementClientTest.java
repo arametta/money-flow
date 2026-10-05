@@ -65,6 +65,30 @@ class HttpStatementClientTest {
     }
 
     @Test
+    void ignoresUnknownFields() {
+        wireMock.stubFor(get("/accounts/acc-1/statements/2026-01")
+                .willReturn(okJson("""
+                        {
+                          "accountId": "acc-1",
+                          "month": "2026-01",
+                          "currency": "EUR",
+                          "openingBalance": 100.00,
+                          "accountName": "Main account",
+                          "transactions": [
+                            {"id": "t1", "valueDate": "2026-01-05", "amount": 50.00, "merchant": "Grocery store"}
+                          ]
+                        }
+                        """)));
+
+        Statement statement = clientWithTimeout(Duration.ofSeconds(5))
+                .getStatement("acc-1", YearMonth.of(2026, 1));
+
+        assertThat(statement.openingBalance()).isEqualByComparingTo("100.00");
+        assertThat(statement.transactions()).hasSize(1);
+        assertThat(statement.transactions().get(0).amount()).isEqualByComparingTo("50.00");
+    }
+
+    @Test
     void throwsNotFoundOn404() {
         wireMock.stubFor(get("/accounts/acc-1/statements/2026-01").willReturn(notFound()));
 
