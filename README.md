@@ -240,7 +240,7 @@ unaffected by what's on your machine.
 ```bash
 ./mvnw test
 ```
-Runs all 54 tests without Docker or a running app. CI runs the same tests
+Runs all 65 tests without Docker or a running app. CI runs the same tests
 with `./mvnw verify` and then builds the Docker image.
 
 Seven levels, each with the tool that fits it:
