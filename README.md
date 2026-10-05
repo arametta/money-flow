@@ -258,9 +258,10 @@ Six levels, each with the tool that fits it:
   `GlobalExceptionHandlerTest`): MockMvc with Mockito's `@MockitoBean`
   standing in for `MoneyFlowService`. Covers every status
   (200/400/404/405/500/502/504, including unknown paths) with its exact
-  message, and that stack traces are logged only for 5xx errors. Mockito is used only at this layer: it's
-  the idiomatic tool for testing Spring's HTTP wiring, while the service
-  layer uses plain fakes since its logic is simple and pure.
+  message, and that stack traces are logged only for 5xx errors. Mockito is
+  used only at this layer: it's the idiomatic tool for testing Spring's HTTP
+  wiring, while the service layer uses plain fakes since its logic is simple
+  and pure.
 - **Configuration** (`ApiPropertiesValidationTest`, `MoneyFlowApplicationTests`):
   the app refuses to start with a blank URL or missing timeout, and the full
   application context starts with the real configuration.
