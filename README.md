@@ -157,6 +157,8 @@ structure an app this size doesn't need.
 - A positive amount is income, a negative amount is spending, zero is ignored.
 - The statements API returns only the requested month's transactions (by
   value date); the app doesn't filter them again.
+- Transaction ids are unique within a statement. The app doesn't remove
+  duplicates: a transaction listed twice would be counted twice.
 - The statement's opening balance is correct. The closing balance is
   calculated as opening balance + income − spending.
 - The statement must be for the account and month that were requested.
