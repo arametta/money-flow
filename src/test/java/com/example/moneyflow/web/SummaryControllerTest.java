@@ -75,6 +75,20 @@ class SummaryControllerTest {
     }
 
     @Test
+    void returns400WhenAccountIdIsTooLong() throws Exception {
+        mockMvc.perform(post("/summaries").param("accountId", "a".repeat(65)).param("month", "2026-01"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("accountId must be at most 64 characters"));
+    }
+
+    @Test
+    void returns400WhenAccountIdHasUnsafeCharacters() throws Exception {
+        mockMvc.perform(post("/summaries").param("accountId", "..").param("month", "2026-01"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("accountId must contain only letters, digits and '-'"));
+    }
+
+    @Test
     void returns404WhenStatementIsNotFound() throws Exception {
         when(moneyFlowService.process(any(), any())).thenThrow(
                 new StatementNotFoundException("not found", null));
