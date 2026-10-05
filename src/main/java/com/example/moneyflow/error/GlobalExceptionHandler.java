@@ -22,20 +22,20 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<ApiError> handleMissingParameter(MissingServletRequestParameterException e) {
-        return badRequest(e, e.getParameterName() + " is required");
+        return badRequest(e.getParameterName() + " is required");
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ApiError> handleTypeMismatch(MethodArgumentTypeMismatchException e) {
         String rule = YearMonth.class.equals(e.getRequiredType()) ? "must be in YYYY-MM format" : "has an invalid value";
-        return badRequest(e, e.getName() + " " + rule);
+        return badRequest(e.getName() + " " + rule);
     }
 
     @ExceptionHandler(HandlerMethodValidationException.class)
     public ResponseEntity<ApiError> handleValidation(HandlerMethodValidationException e) {
         ParameterValidationResult result = e.getParameterValidationResults().get(0);
         String name = result.getMethodParameter().getParameterName();
-        return badRequest(e, name + " " + result.getResolvableErrors().get(0).getDefaultMessage());
+        return badRequest(name + " " + result.getResolvableErrors().get(0).getDefaultMessage());
     }
 
     @ExceptionHandler(StatementNotFoundException.class)
@@ -59,26 +59,22 @@ public class GlobalExceptionHandler {
         if (e instanceof ErrorResponse springError) {
             HttpStatus status = HttpStatus.valueOf(springError.getStatusCode().value());
             String reason = status.getReasonPhrase();
-            return errorResponse(status, e, reason.charAt(0) + reason.substring(1).toLowerCase());
+            return errorResponse(status, reason.charAt(0) + reason.substring(1).toLowerCase());
         }
         log.error("Unexpected error", e);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiError("Internal error"));
     }
 
     private ResponseEntity<ApiError> errorResponse(HttpStatus status, Exception e) {
-        return errorResponse(status, e, e.getMessage());
+        return errorResponse(status, e.getMessage());
     }
 
-    private ResponseEntity<ApiError> badRequest(Exception e, String message) {
-        return errorResponse(HttpStatus.BAD_REQUEST, e, message);
+    private ResponseEntity<ApiError> badRequest(String message) {
+        return errorResponse(HttpStatus.BAD_REQUEST, message);
     }
 
-    private ResponseEntity<ApiError> errorResponse(HttpStatus status, Exception e, String message) {
-        if (status.is5xxServerError()) {
-            log.warn("Request failed with {}: {}", status, message, e);
-        } else {
-            log.warn("Request failed with {}: {}", status, message);
-        }
+    private ResponseEntity<ApiError> errorResponse(HttpStatus status, String message) {
+        log.warn("Request failed with {}: {}", status, message);
         return ResponseEntity.status(status).body(new ApiError(message));
     }
 }
