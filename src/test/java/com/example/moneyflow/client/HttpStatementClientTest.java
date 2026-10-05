@@ -161,6 +161,17 @@ class HttpStatementClientTest {
     }
 
     @Test
+    void throwsUnavailableWhenResponseHasNoBody() {
+        wireMock.stubFor(get("/accounts/acc-1/statements/2026-01")
+                .willReturn(aResponse().withStatus(200).withHeader("Content-Type", "application/json")));
+
+        assertThatThrownBy(() ->
+                clientWithTimeout(Duration.ofSeconds(5)).getStatement("acc-1", YearMonth.of(2026, 1)))
+                .isInstanceOf(StatementUnavailableException.class)
+                .hasMessage("Statements API returned an incomplete statement");
+    }
+
+    @Test
     void throwsUnavailableOnEmptyBody() {
         wireMock.stubFor(get("/accounts/acc-1/statements/2026-01").willReturn(okJson("{}")));
 
