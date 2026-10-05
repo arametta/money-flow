@@ -18,6 +18,8 @@ paths:
     get:
       tags: [Statements API]
       summary: Get the statement for one account and month
+      description: >
+        If there is no answer in time, money-flow answers 504.
       parameters:
         - name: accountId
           in: path
@@ -39,12 +41,22 @@ paths:
               schema:
                 $ref: '#/components/schemas/Statement'
         '404':
-          description: Account or statement not found
+          description: >
+            Account or statement not found. money-flow answers 404.
+        '4XX':
+          description: >
+            Any other client error. money-flow answers 502.
+        '5XX':
+          description: >
+            Server error. money-flow answers 502.
 
   /monthly-summaries:
     post:
       tags: [Monthly Summaries API]
       summary: Send a calculated monthly summary
+      description: >
+        If there is no answer in time, money-flow answers 504. The summary may
+        already be stored in that case.
       requestBody:
         required: true
         content:
@@ -54,6 +66,12 @@ paths:
       responses:
         '201':
           description: Summary accepted
+        '4XX':
+          description: >
+            Client error. money-flow answers 502.
+        '5XX':
+          description: >
+            Server error. money-flow answers 502.
 
 components:
   schemas:
