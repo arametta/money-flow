@@ -223,10 +223,10 @@ unaffected by what's on your machine.
 ```bash
 ./mvnw test
 ```
-Runs all 41 tests without Docker or a running app. CI runs the same tests
+Runs all 44 tests without Docker or a running app. CI runs the same tests
 with `./mvnw verify` and then builds the Docker image.
 
-Five levels, each with the tool that fits it:
+Six levels, each with the tool that fits it:
 
 - **Calculator** (`StatementCalculatorTest`): plain numbers in, plain numbers
   out, no framework. Built with real TDD for the first two rules (a failing
@@ -252,10 +252,13 @@ Five levels, each with the tool that fits it:
 - **Configuration** (`ApiPropertiesValidationTest`, `MoneyFlowApplicationTests`):
   the app refuses to start with a blank URL or missing timeout, and the full
   application context starts with the real configuration.
+- **End to end** (`MoneyFlowEndToEndTest`): starts the whole app on a random
+  port, with WireMock playing both external APIs, and calls it over real
+  HTTP. Covers success (including the summary JSON the summaries API
+  receives), a missing statement (404), and a failing summaries API (502).
 
-There's no automated test of the whole app through real HTTP yet; that flow
-is checked by hand with `docker compose up --build` and the demo requests in
-"How to run it" (see "Trade-offs and next steps").
+To try the whole app by hand, use `docker compose up --build` and the demo
+requests in "How to run it".
 
 ## Deployment
 
@@ -314,9 +317,6 @@ Next steps:
   counts them or raises an alert.
 - The deployment steps described above: pushing the image to a registry, a
   real deploy step, and a health check endpoint.
-- An automated test of the whole app through real HTTP, starting the full
-  app against WireMock. Today each layer is tested on its own, and the whole
-  flow is checked by hand with `docker compose`.
 
 ## Use of AI tools
 
