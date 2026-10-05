@@ -131,6 +131,7 @@ structure an app this size doesn't need.
 | `StatementsApiProperties` | Settings for connecting to the statements API, checked at startup. |
 | `SummaryApiProperties` | Settings for connecting to the summary API, checked at startup. |
 | `RestClients` | Builds an HTTP client with a base URL and a timeout, shared by both HTTP clients. |
+| `AccountIds` | Masks account ids for logs, and names a failure's cause without its message. |
 | `HttpStatementClient` | Calls the real statements API over HTTP. |
 | `HttpSummaryPublisher` | Sends the summary to the real summary API over HTTP. |
 
@@ -148,6 +149,7 @@ structure an app this size doesn't need.
 | `StatementTimeoutException` | The statements API did not respond in time. |
 | `StatementUnavailableException` | The statements API failed or returned something we could not use. |
 | `SummaryUnavailableException` | The summary API failed, so the summary was not sent. |
+| `SummaryTimeoutException` | The summary API did not respond in time; the summary may already be stored. |
 | `ErrorResponse` | The body returned for any error response. |
 | `GlobalExceptionHandler` | Turns known failures into simple error responses. |
 
@@ -168,6 +170,9 @@ structure an app this size doesn't need.
 - Calling the endpoint twice for the same account and month sends the summary
   twice. The summaries API is assumed to accept that, for example by replacing
   the earlier summary for that account and month.
+- If the summary `POST` times out, the summary may already be stored even
+  though the caller got a 504. Retrying is safe only because the summaries
+  API is assumed to replace a summary by account and month.
 
 ## Building before the APIs exist
 
@@ -200,20 +205,25 @@ else in the app depends on them.
 |---|---|
 | Invalid or missing `accountId`/`month` | 400 |
 | Statements API has no statement for this account/month | 404 |
+| Unknown path (for example `/favicon.ico`) | 404 |
 | Wrong HTTP method (anything other than `POST`) | 405 |
 | Unexpected error inside the app | 500 |
 | Statements API fails, or returns an incomplete statement or one for a different account/month | 502 |
 | Summary API fails (the summary is not returned in this case) | 502 |
-| Statements API times out | 504 |
+| Statements API or summary API times out | 504 |
 
 All error responses share the same simple body: `{"message": "..."}`. The
 exact messages per status are in [`money-flow-api.yaml`](./money-flow-api.yaml).
 Messages never include internal details or the account id.
 
-Every failed request is logged by the error handler. Stack traces are logged
-only for 5xx errors, where they help find a bug; 4xx errors are the caller's
-mistake and log one line. The account id appears in logs only masked to its
-last 4 characters.
+Every failed request is logged by the error handler, with the status the
+caller got. A failed call to an external API also logs one line from the
+HTTP client: the account id masked to its last 4 characters (`****` for ids
+of 4 characters or fewer) and the kind of failure, by exception type only.
+Upstream error bodies and URLs are never logged, because they can contain the
+full account id; a test checks this for timeouts, upstream errors and 404s.
+Stack traces are logged only for 5xx errors, where they help find a bug; 4xx
+errors are the caller's mistake and log one line.
 
 ## Testing
 
@@ -225,7 +235,7 @@ unaffected by what's on your machine.
 ```bash
 ./mvnw test
 ```
-Runs all 44 tests without Docker or a running app. CI runs the same tests
+Runs all 54 tests without Docker or a running app. CI runs the same tests
 with `./mvnw verify` and then builds the Docker image.
 
 Six levels, each with the tool that fits it:
@@ -242,13 +252,13 @@ Six levels, each with the tool that fits it:
 - **HTTP clients** (`HttpStatementClientTest`, `HttpSummaryPublisherTest`):
   WireMock plays each external API. Covers success (including the exact JSON
   sent to the summaries API), 404, 500, timeouts, refused and reset
-  connections, incomplete responses, and that the account id never ends up
-  in an error message.
+  connections, incomplete responses, unknown fields being ignored, and that
+  the account id never ends up in an error message or unmasked in a log.
 - **Web and error handling** (`SummaryControllerTest`,
   `GlobalExceptionHandlerTest`): MockMvc with Mockito's `@MockitoBean`
   standing in for `MoneyFlowService`. Covers every status
-  (200/400/404/405/500/502/504) with its exact message, and that stack traces
-  are logged only for 5xx errors. Mockito is used only at this layer: it's
+  (200/400/404/405/500/502/504, including unknown paths) with its exact
+  message, and that stack traces are logged only for 5xx errors. Mockito is used only at this layer: it's
   the idiomatic tool for testing Spring's HTTP wiring, while the service
   layer uses plain fakes since its logic is simple and pure.
 - **Configuration** (`ApiPropertiesValidationTest`, `MoneyFlowApplicationTests`):
@@ -257,7 +267,9 @@ Six levels, each with the tool that fits it:
 - **End to end** (`MoneyFlowEndToEndTest`): starts the whole app on a random
   port, with WireMock playing both external APIs, and calls it over real
   HTTP. Covers success (including the summary JSON the summaries API
-  receives), a missing statement (404), and a failing summaries API (502).
+  receives), a missing statement (404), and a failing summaries API (502),
+  and that the full account id never appears in the logs for timeouts,
+  upstream errors and 404s.
 
 To try the whole app by hand, use `docker compose up --build` and the demo
 requests in "How to run it".
@@ -296,8 +308,8 @@ Trade-offs I made on purpose:
 
 - **One synchronous call does everything.** Fetch, calculate and send happen
   inside one request, with no database or queue (the task asks for no
-  persistence). It's simple, but if the summaries API is down the caller
-  gets a 502 and has to try again later; nothing is kept to retry
+  persistence). It's simple, but if the summaries API is down or slow the
+  caller gets a 502 or 504 and has to try again later; nothing is kept to retry
   automatically.
 - **A plain HTTP client builder instead of Spring Boot's ready-made one.**
   Both HTTP clients build their `RestClient` from `RestClient.builder()`
