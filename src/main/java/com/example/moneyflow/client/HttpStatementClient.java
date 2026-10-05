@@ -17,6 +17,9 @@ import org.springframework.web.client.RestClientException;
 import java.net.SocketTimeoutException;
 import java.time.YearMonth;
 
+import static com.example.moneyflow.client.AccountIds.causeType;
+import static com.example.moneyflow.client.AccountIds.mask;
+
 /** Calls the real statements API over HTTP. */
 @Component
 public class HttpStatementClient implements StatementClient {
@@ -40,19 +43,18 @@ public class HttpStatementClient implements StatementClient {
             return statement;
         } catch (HttpClientErrorException.NotFound e) {
             log.info("No statement for account ending in {}", mask(accountId));
-            throw new StatementNotFoundException("No statement found", e);
+            throw new StatementNotFoundException("No statement found", null);
         } catch (ResourceAccessException e) {
             if (e.getCause() instanceof SocketTimeoutException) {
-                throw new StatementTimeoutException("Statements API timed out", e);
+                log.warn("Statements API timed out for account ending in {}", mask(accountId));
+                throw new StatementTimeoutException("Statements API timed out", null);
             }
-            throw new StatementUnavailableException("Statements API failed", e);
+            log.warn("Statements API failed for account ending in {} ({})", mask(accountId), causeType(e));
+            throw new StatementUnavailableException("Statements API failed", null);
         } catch (RestClientException e) {
-            throw new StatementUnavailableException("Statements API failed", e);
+            log.warn("Statements API failed for account ending in {} ({})", mask(accountId), causeType(e));
+            throw new StatementUnavailableException("Statements API failed", null);
         }
-    }
-
-    private static String mask(String accountId) {
-        return accountId.length() <= 4 ? accountId : accountId.substring(accountId.length() - 4);
     }
 
     private void validate(Statement statement) {
