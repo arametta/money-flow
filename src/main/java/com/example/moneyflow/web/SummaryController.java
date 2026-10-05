@@ -21,7 +21,7 @@ public class SummaryController {
 
     @PostMapping("/summaries")
     public MonthlySummary createSummary(
-            @RequestParam @NotBlank String accountId,
+            @RequestParam @NotBlank(message = "must not be blank") String accountId,
             @RequestParam YearMonth month) {
         return moneyFlowService.process(accountId, month);
     }

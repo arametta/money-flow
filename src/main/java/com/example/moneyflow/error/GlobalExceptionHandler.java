@@ -4,12 +4,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.method.ParameterValidationResult;
 import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+
+import java.time.YearMonth;
 
 /** Turns known failures into simple error responses. */
 @RestControllerAdvice
@@ -24,12 +27,15 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ApiError> handleTypeMismatch(MethodArgumentTypeMismatchException e) {
-        return badRequest(e, "month must be in YYYY-MM format");
+        String rule = YearMonth.class.equals(e.getRequiredType()) ? "must be in YYYY-MM format" : "has an invalid value";
+        return badRequest(e, e.getName() + " " + rule);
     }
 
     @ExceptionHandler(HandlerMethodValidationException.class)
     public ResponseEntity<ApiError> handleValidation(HandlerMethodValidationException e) {
-        return badRequest(e, "accountId must not be blank");
+        ParameterValidationResult result = e.getParameterValidationResults().get(0);
+        String name = result.getMethodParameter().getParameterName();
+        return badRequest(e, name + " " + result.getResolvableErrors().get(0).getDefaultMessage());
     }
 
     @ExceptionHandler(StatementNotFoundException.class)
