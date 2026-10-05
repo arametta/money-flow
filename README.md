@@ -9,6 +9,10 @@ balance and the closing balance, sends that summary to a summaries API, and
 returns it to the caller. There is no database: every request is calculated
 fresh.
 
+For example, a mobile banking app could show the account holder a monthly
+overview, or suggest a savings product to someone who earns more than they
+spend, without each app adding up transactions itself.
+
 ## How to run it
 
 ```bash
