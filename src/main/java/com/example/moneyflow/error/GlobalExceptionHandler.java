@@ -36,8 +36,8 @@ public class GlobalExceptionHandler {
         return errorResponse(HttpStatus.NOT_FOUND, e);
     }
 
-    @ExceptionHandler(StatementTimeoutException.class)
-    public ResponseEntity<ErrorResponse> handleTimeout(StatementTimeoutException e) {
+    @ExceptionHandler({StatementTimeoutException.class, SummaryTimeoutException.class})
+    public ResponseEntity<ErrorResponse> handleTimeout(RuntimeException e) {
         return errorResponse(HttpStatus.GATEWAY_TIMEOUT, e);
     }
 

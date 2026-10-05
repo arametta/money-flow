@@ -1,13 +1,17 @@
 package com.example.moneyflow.client;
 
+import com.example.moneyflow.error.SummaryTimeoutException;
 import com.example.moneyflow.error.SummaryUnavailableException;
 import com.example.moneyflow.model.MonthlySummary;
 import com.example.moneyflow.service.SummaryPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
+
+import java.net.SocketTimeoutException;
 
 import static com.example.moneyflow.client.AccountIds.causeType;
 import static com.example.moneyflow.client.AccountIds.mask;
@@ -32,6 +36,13 @@ public class HttpSummaryPublisher implements SummaryPublisher {
                     .body(summary)
                     .retrieve()
                     .toBodilessEntity();
+        } catch (ResourceAccessException e) {
+            if (e.getCause() instanceof SocketTimeoutException) {
+                log.warn("Summary API timed out for account ending in {}", mask(summary.accountId()));
+                throw new SummaryTimeoutException("Summary API timed out", null);
+            }
+            log.warn("Summary API failed for account ending in {} ({})", mask(summary.accountId()), causeType(e));
+            throw new SummaryUnavailableException("Summary API failed", null);
         } catch (RestClientException e) {
             log.warn("Summary API failed for account ending in {} ({})", mask(summary.accountId()), causeType(e));
             throw new SummaryUnavailableException("Summary API failed", null);
