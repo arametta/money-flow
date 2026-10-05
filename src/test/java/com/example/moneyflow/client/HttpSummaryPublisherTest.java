@@ -66,7 +66,8 @@ class HttpSummaryPublisherTest {
         wireMock.stubFor(post("/monthly-summaries").willReturn(notFound()));
 
         assertThatThrownBy(() -> publisherWithTimeout(Duration.ofSeconds(5)).publish(SUMMARY))
-                .isInstanceOf(SummaryUnavailableException.class);
+                .isInstanceOf(SummaryUnavailableException.class)
+                .hasMessage("Summary API failed");
     }
 
     @Test
@@ -74,7 +75,8 @@ class HttpSummaryPublisherTest {
         wireMock.stubFor(post("/monthly-summaries").willReturn(serverError()));
 
         assertThatThrownBy(() -> publisherWithTimeout(Duration.ofSeconds(5)).publish(SUMMARY))
-                .isInstanceOf(SummaryUnavailableException.class);
+                .isInstanceOf(SummaryUnavailableException.class)
+                .hasMessage("Summary API failed");
     }
 
     @Test

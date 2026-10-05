@@ -1,5 +1,6 @@
 package com.example.moneyflow.error;
 
+import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
@@ -39,7 +40,7 @@ class GlobalExceptionHandlerTest {
         handler.handleNotFound(new StatementNotFoundException("not found", null));
 
         ILoggingEvent event = appender.list.get(0);
-        assertThat(event.getLevel().toString()).isEqualTo("WARN");
+        assertThat(event.getLevel()).isEqualTo(Level.WARN);
         assertThat(event.getThrowableProxy()).isNull();
     }
 
@@ -48,7 +49,7 @@ class GlobalExceptionHandlerTest {
         handler.handleUnexpected(new NoResourceFoundException(HttpMethod.GET, "/nope", "nope"));
 
         ILoggingEvent event = appender.list.get(0);
-        assertThat(event.getLevel().toString()).isEqualTo("WARN");
+        assertThat(event.getLevel()).isEqualTo(Level.WARN);
         assertThat(event.getThrowableProxy()).isNull();
     }
 
@@ -57,7 +58,7 @@ class GlobalExceptionHandlerTest {
         handler.handleBadGateway(new StatementUnavailableException("failed", new RuntimeException("cause")));
 
         ILoggingEvent event = appender.list.get(0);
-        assertThat(event.getLevel().toString()).isEqualTo("WARN");
+        assertThat(event.getLevel()).isEqualTo(Level.WARN);
         assertThat(event.getThrowableProxy()).isNotNull();
     }
 }
