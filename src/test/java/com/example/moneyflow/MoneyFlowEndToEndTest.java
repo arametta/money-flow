@@ -1,6 +1,6 @@
 package com.example.moneyflow;
 
-import com.example.moneyflow.error.ErrorResponse;
+import com.example.moneyflow.error.ApiError;
 import com.example.moneyflow.model.MonthlySummary;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import org.junit.jupiter.api.Test;
@@ -114,7 +114,7 @@ class MoneyFlowEndToEndTest {
     void returns404WhenTheStatementsApiHasNoStatement() {
         wireMock.stubFor(get("/accounts/acc-1/statements/2026-01").willReturn(notFound()));
 
-        ResponseEntity<ErrorResponse> response = postSummary(ErrorResponse.class);
+        ResponseEntity<ApiError> response = postSummary(ApiError.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(response.getBody().message()).isEqualTo("No statement found");
@@ -126,7 +126,7 @@ class MoneyFlowEndToEndTest {
         wireMock.stubFor(get("/accounts/acc-1/statements/2026-01").willReturn(okJson(STATEMENT)));
         wireMock.stubFor(post("/monthly-summaries").willReturn(serverError()));
 
-        ResponseEntity<ErrorResponse> response = postSummary(ErrorResponse.class);
+        ResponseEntity<ApiError> response = postSummary(ApiError.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_GATEWAY);
         assertThat(response.getBody().message()).isEqualTo("Summary API failed");
@@ -137,7 +137,7 @@ class MoneyFlowEndToEndTest {
         wireMock.stubFor(get("/accounts/" + SECRET_ACCOUNT + "/statements/2026-01")
                 .willReturn(okJson(STATEMENT).withFixedDelay(1500)));
 
-        assertThat(postSummary(SECRET_ACCOUNT, ErrorResponse.class).getStatusCode()).isEqualTo(HttpStatus.GATEWAY_TIMEOUT);
+        assertThat(postSummary(SECRET_ACCOUNT, ApiError.class).getStatusCode()).isEqualTo(HttpStatus.GATEWAY_TIMEOUT);
         assertAccountIdNotLogged(output);
     }
 
@@ -146,7 +146,7 @@ class MoneyFlowEndToEndTest {
         wireMock.stubFor(get("/accounts/" + SECRET_ACCOUNT + "/statements/2026-01")
                 .willReturn(aResponse().withStatus(500).withBody("database down for " + SECRET_ACCOUNT)));
 
-        assertThat(postSummary(SECRET_ACCOUNT, ErrorResponse.class).getStatusCode()).isEqualTo(HttpStatus.BAD_GATEWAY);
+        assertThat(postSummary(SECRET_ACCOUNT, ApiError.class).getStatusCode()).isEqualTo(HttpStatus.BAD_GATEWAY);
         assertAccountIdNotLogged(output);
     }
 
@@ -154,7 +154,7 @@ class MoneyFlowEndToEndTest {
     void neverLogsAccountIdOnStatementNotFound(CapturedOutput output) {
         wireMock.stubFor(get("/accounts/" + SECRET_ACCOUNT + "/statements/2026-01").willReturn(notFound()));
 
-        assertThat(postSummary(SECRET_ACCOUNT, ErrorResponse.class).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(postSummary(SECRET_ACCOUNT, ApiError.class).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         assertAccountIdNotLogged(output);
     }
 
@@ -165,7 +165,7 @@ class MoneyFlowEndToEndTest {
         wireMock.stubFor(post("/monthly-summaries")
                 .willReturn(aResponse().withStatus(500).withBody("cannot store summary for " + SECRET_ACCOUNT)));
 
-        assertThat(postSummary(SECRET_ACCOUNT, ErrorResponse.class).getStatusCode()).isEqualTo(HttpStatus.BAD_GATEWAY);
+        assertThat(postSummary(SECRET_ACCOUNT, ApiError.class).getStatusCode()).isEqualTo(HttpStatus.BAD_GATEWAY);
         assertAccountIdNotLogged(output);
     }
 

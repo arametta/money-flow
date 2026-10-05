@@ -150,7 +150,7 @@ structure an app this size doesn't need.
 | `StatementUnavailableException` | The statements API failed or returned something we could not use. |
 | `SummaryUnavailableException` | The summary API failed, so the summary was not sent. |
 | `SummaryTimeoutException` | The summary API did not respond in time; the summary may already be stored. |
-| `ErrorResponse` | The body returned for any error response. |
+| `ApiError` | The body returned for any error response. |
 | `GlobalExceptionHandler` | Turns known failures into simple error responses. |
 
 ## Assumptions
