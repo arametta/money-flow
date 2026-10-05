@@ -19,10 +19,13 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.notFound;
 import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.serverError;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -86,6 +89,20 @@ class HttpStatementClientTest {
         assertThat(statement.openingBalance()).isEqualByComparingTo("100.00");
         assertThat(statement.transactions()).hasSize(1);
         assertThat(statement.transactions().get(0).amount()).isEqualByComparingTo("50.00");
+    }
+
+    @Test
+    void encodesSlashesInTheAccountId() {
+        wireMock.stubFor(get(anyUrl()).willReturn(notFound()));
+        HttpStatementClient client = clientWithTimeout(Duration.ofSeconds(5));
+
+        assertThatThrownBy(() -> client.getStatement("a/b", YearMonth.of(2026, 1)))
+                .isInstanceOf(StatementNotFoundException.class);
+        assertThatThrownBy(() -> client.getStatement("../x", YearMonth.of(2026, 1)))
+                .isInstanceOf(StatementNotFoundException.class);
+
+        wireMock.verify(getRequestedFor(urlEqualTo("/accounts/a%2Fb/statements/2026-01")));
+        wireMock.verify(getRequestedFor(urlEqualTo("/accounts/..%2Fx/statements/2026-01")));
     }
 
     @Test
