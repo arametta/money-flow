@@ -356,17 +356,9 @@ the bug fixes after review were done test first: a failing test, then the
 code to make it pass. When a new test passed straight away, it was committed
 as a confirmation test instead of being presented as a failing one.
 
-Reviewing the output mattered as much as generating it. Two examples:
-
-- I noticed the service was catching HTTP-client exceptions, which quietly
-  tied the business logic to HTTP. I moved that translation into the two
-  HTTP adapters, so the service has no transport-related imports.
-- An assumption that Spring Boot would provide a ready-made HTTP client
-  builder turned out to be wrong for Spring Boot 4, where it needs an extra
-  module, and the app failed to start. I chose not to add a dependency for
-  something the app doesn't need yet, and noted it under "Trade-offs and next
-  steps".
-
-When the code was done, I ran an AI-assisted code review. I checked each
-finding against the code before acting on it, fixed the real issues, and
-moved the ones outside the scope of this task to "Trade-offs and next steps".
+When the code was done, I ran several rounds of AI-assisted code review. I
+checked each finding against the code, or reproduced it against the running
+app, before acting on it. Most were real and were fixed test first; a few I
+left on purpose, with the reason written down; and some turned out different
+from how they were reported. Findings outside the scope of this task went to
+"Trade-offs and next steps".
