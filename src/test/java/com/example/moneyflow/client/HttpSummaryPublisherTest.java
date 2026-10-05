@@ -1,5 +1,6 @@
 package com.example.moneyflow.client;
 
+import com.example.moneyflow.error.SummaryTimeoutException;
 import com.example.moneyflow.error.SummaryUnavailableException;
 import com.example.moneyflow.model.MonthlySummary;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
@@ -77,10 +78,11 @@ class HttpSummaryPublisherTest {
     }
 
     @Test
-    void throwsUnavailableOnTimeout() {
+    void throwsTimeoutOnTimeout() {
         wireMock.stubFor(post("/monthly-summaries").willReturn(ok().withFixedDelay(500)));
 
         assertThatThrownBy(() -> publisherWithTimeout(Duration.ofMillis(100)).publish(SUMMARY))
-                .isInstanceOf(SummaryUnavailableException.class);
+                .isInstanceOf(SummaryTimeoutException.class)
+                .hasMessage("Summary API timed out");
     }
 }

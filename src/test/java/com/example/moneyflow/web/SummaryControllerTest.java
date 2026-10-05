@@ -3,6 +3,7 @@ package com.example.moneyflow.web;
 import com.example.moneyflow.error.StatementNotFoundException;
 import com.example.moneyflow.error.StatementTimeoutException;
 import com.example.moneyflow.error.StatementUnavailableException;
+import com.example.moneyflow.error.SummaryTimeoutException;
 import com.example.moneyflow.error.SummaryUnavailableException;
 import com.example.moneyflow.model.MonthlySummary;
 import com.example.moneyflow.service.MoneyFlowService;
@@ -107,6 +108,16 @@ class SummaryControllerTest {
     void returns504WhenStatementsApiTimesOut() throws Exception {
         when(moneyFlowService.process(any(), any())).thenThrow(
                 new StatementTimeoutException("timed out", null));
+
+        mockMvc.perform(post("/summaries").param("accountId", "acc-1").param("month", "2026-01"))
+                .andExpect(status().isGatewayTimeout())
+                .andExpect(jsonPath("$.message").value("timed out"));
+    }
+
+    @Test
+    void returns504WhenSummaryApiTimesOut() throws Exception {
+        when(moneyFlowService.process(any(), any())).thenThrow(
+                new SummaryTimeoutException("timed out", null));
 
         mockMvc.perform(post("/summaries").param("accountId", "acc-1").param("month", "2026-01"))
                 .andExpect(status().isGatewayTimeout())
