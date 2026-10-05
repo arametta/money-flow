@@ -13,7 +13,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/** Checks that errors are logged at the right level, with a stack trace only for server errors. */
+/** Checks that errors are logged at the right level, with a stack trace only for unexpected errors. */
 class GlobalExceptionHandlerTest {
 
     private final GlobalExceptionHandler handler = new GlobalExceptionHandler();
@@ -54,12 +54,12 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void logsServerErrorsWithStackTrace() {
-        handler.handleBadGateway(new StatementUnavailableException("failed", new RuntimeException("cause")));
+    void logsKnownServerErrorsWithoutStackTrace() {
+        handler.handleBadGateway(new StatementUnavailableException("failed", null));
 
         ILoggingEvent event = appender.list.get(0);
         assertThat(event.getLevel()).isEqualTo(Level.WARN);
-        assertThat(event.getThrowableProxy()).isNotNull();
+        assertThat(event.getThrowableProxy()).isNull();
     }
 
     @Test
