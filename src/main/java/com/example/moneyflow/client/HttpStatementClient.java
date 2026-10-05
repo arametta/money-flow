@@ -4,7 +4,6 @@ import com.example.moneyflow.error.StatementNotFoundException;
 import com.example.moneyflow.error.StatementTimeoutException;
 import com.example.moneyflow.error.StatementUnavailableException;
 import com.example.moneyflow.model.Statement;
-import com.example.moneyflow.model.Transaction;
 import com.example.moneyflow.service.StatementClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,21 +57,8 @@ public class HttpStatementClient implements StatementClient {
     }
 
     private void validate(Statement statement) {
-        if (statement == null
-                || statement.accountId() == null
-                || statement.month() == null
-                || statement.currency() == null
-                || statement.openingBalance() == null
-                || statement.transactions() == null) {
+        if (statement == null) {
             throw new StatementUnavailableException("Statements API returned an incomplete statement", null);
-        }
-        for (Transaction transaction : statement.transactions()) {
-            if (transaction == null
-                    || transaction.id() == null
-                    || transaction.valueDate() == null
-                    || transaction.amount() == null) {
-                throw new StatementUnavailableException("Statements API returned an incomplete transaction", null);
-            }
         }
     }
 }

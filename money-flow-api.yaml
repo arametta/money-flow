@@ -82,10 +82,10 @@ paths:
         '502':
           description: >
             The Statements API or the Monthly Summaries API failed, or the
-            Statements API returned an incomplete or mismatched statement.
-            Messages: "Statements API failed", "Statements API returned an
-            incomplete statement", "Statements API returned an incomplete
-            transaction", "Statement does not match the request",
+            Statements API returned an incomplete, empty or mismatched
+            statement. Messages: "Statements API failed" (also for missing
+            fields), "Statements API returned an incomplete statement" (empty
+            response), "Statement does not match the request",
             "Summary API failed".
           content:
             application/json:

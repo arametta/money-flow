@@ -167,6 +167,8 @@ structure an app this size doesn't need.
   Anything else is treated as a bad response (502), not used.
 - Only the fields the calculation needs are read; unknown fields are ignored.
   A missing required field is treated as a bad response (502), never as zero.
+  The `Statement` and `Transaction` records reject missing fields themselves,
+  so every adapter gets the same check, not only the HTTP one.
 - Calling the endpoint twice for the same account and month sends the summary
   twice. The summaries API is assumed to accept that, for example by replacing
   the earlier summary for that account and month.
@@ -238,8 +240,11 @@ unaffected by what's on your machine.
 Runs all 54 tests without Docker or a running app. CI runs the same tests
 with `./mvnw verify` and then builds the Docker image.
 
-Six levels, each with the tool that fits it:
+Seven levels, each with the tool that fits it:
 
+- **Model** (`StatementTest`, `TransactionTest`): plain unit tests, no
+  framework. The records reject missing fields and keep their own unchangeable
+  list of transactions.
 - **Calculator** (`StatementCalculatorTest`): plain numbers in, plain numbers
   out, no framework. Built with real TDD for the first two rules (a failing
   test, then the minimum code to pass); the rest passed immediately once the
