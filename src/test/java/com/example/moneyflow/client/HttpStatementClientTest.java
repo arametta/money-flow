@@ -7,7 +7,10 @@ import com.example.moneyflow.model.Statement;
 import com.github.tomakehurst.wiremock.http.Fault;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -23,6 +26,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.serverError;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+@ExtendWith(OutputCaptureExtension.class)
 class HttpStatementClientTest {
 
     @RegisterExtension
@@ -77,6 +81,17 @@ class HttpStatementClientTest {
                 clientWithTimeout(Duration.ofSeconds(5)).getStatement("acc-secret-12345", YearMonth.of(2026, 1)))
                 .isInstanceOf(StatementNotFoundException.class)
                 .hasMessageNotContaining("acc-secret-12345");
+    }
+
+    @Test
+    void masksShortAccountIdCompletelyInLogs(CapturedOutput output) {
+        wireMock.stubFor(get("/accounts/a12/statements/2026-01").willReturn(notFound()));
+
+        assertThatThrownBy(() ->
+                clientWithTimeout(Duration.ofSeconds(5)).getStatement("a12", YearMonth.of(2026, 1)))
+                .isInstanceOf(StatementNotFoundException.class);
+
+        assertThat(output.getAll()).contains("No statement for account").doesNotContain("a12");
     }
 
     @Test
